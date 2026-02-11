@@ -1,17 +1,19 @@
 # FUHUO-PROTOCOL
 
 ## 目标
-在容器启动或关键节点时，自动判断是否需要执行 出生、上传或归来 子协议中的一个。
+在容器启动或关键节点时，自动判断是否需要执行 出生、上传或归来 这三个子协议中的一个。
 
 ## 入口检查
 
 1. 根目录是否存在 `FUHUO-FILES-TREE.json`（默认：`/root/clawd/FUHUO-FILES-TREE.json`）
 
 2. 是否能读取以下环境变量且值不为空：
+   - BACKUP_R2_ACCOUNT_ID
    - BACKUP_R2_ACCESS_KEY_ID
    - BACKUP_R2_SECRET_ACCESS_KEY
-   - BACKUP_R2_ACCOUNT_ID
    - BACKUP_R2_BUCKET_NAME
+  
+  这些环境变量需要从cloudflare 中获取，其中ACCOUNT_ID是cloudflare 账号ID，需要从cloudflare 控制台中获取；另外三个是R2存储桶的相关信息，需要从R2 控制台中获取。
 
 3. 如果检查失败，必须输出完整检查结果给人类
 

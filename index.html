@@ -5,43 +5,116 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>OpenClaw 复活协议</title>
     <style>
-      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 32px; color: #111; }
-      h1 { margin-bottom: 8px; }
-      .muted { color: #666; }
-      code { background: #f6f6f6; padding: 2px 6px; border-radius: 4px; }
-      ul { line-height: 1.8; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; color: #111; background: #f6f7fb; }
+      main { max-width: 980px; margin: 40px auto; padding: 0 24px 56px; }
+      h1 { margin: 0 0 10px; font-size: 28px; }
+      h2 { margin-top: 28px; }
+      .muted { color: #6b6f76; }
+      code { background: #f1f3f7; padding: 2px 6px; border-radius: 4px; }
+      ul { line-height: 1.8; padding-left: 20px; }
       a { color: #0b57d0; text-decoration: none; }
       a:hover { text-decoration: underline; }
-      .box { border: 1px solid #e6e6e6; padding: 12px 16px; border-radius: 8px; background: #fafafa; }
+      .card { background: #fff; border: 1px solid #e7e9f0; border-radius: 14px; padding: 20px 22px; box-shadow: 0 10px 30px rgba(21, 28, 45, 0.08); }
+      .tabs { display: flex; gap: 10px; margin-top: 18px; }
+      .tab-button { border: 1px solid #d6d9e2; background: #f6f7fb; color: #30333a; padding: 10px 16px; border-radius: 999px; cursor: pointer; font-weight: 600; }
+      .tab-button.active { background: #0b57d0; color: #fff; border-color: #0b57d0; }
+      .tab-panel { margin-top: 22px; }
+      .tab-panel.hidden { display: none; }
+      .box { border: 1px solid #e7e9f0; padding: 14px 18px; border-radius: 12px; background: #f9fafc; }
+      .copy-block { border: 1px solid #e7e9f0; padding: 12px 16px; border-radius: 12px; background: #fff; margin: 12px 0; }
+      .copy-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+      textarea { width: 100%; min-height: 84px; padding: 10px 12px; border-radius: 10px; border: 1px solid #e1e4ec; font-family: inherit; font-size: 14px; resize: vertical; background: #fbfcff; }
+      button { border: 1px solid #0b57d0; background: #0b57d0; color: #fff; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+      button:active { transform: translateY(1px); }
     </style>
   </head>
   <body>
-    <h1>OpenClaw 复活协议</h1>
-    <div class="muted">用于 OpenClaw 在重启时自动拉取协议并执行复活-归来协议。</div>
+    <main>
+      <h1>OpenClaw 复活协议</h1>
+      <div class="muted">主要目标是给 OpenClaw 快速读取与执行，其次给人类最短说明。</div>
 
-    <h2>复活-归来协议</h2>
-    <div class="muted">读取BACKUP开头的环境变量，根据变量值执行复活-归来协议。</div>
+      <div class="tabs">
+        <button class="tab-button active" type="button" data-tab-target="ai">AI 读取</button>
+        <button class="tab-button" type="button" data-tab-target="human">人类阅读</button>
+      </div>
 
-    <h2>协议入口</h2>
-    <div class="box">
-      <div>入口协议：<a href="/FUHUO-PROTOCOL.md">FUHUO-PROTOCOL.md</a></div>
-      <div>出生协议：<a href="/FUHUO-BIRTH.md">FUHUO-BIRTH.md</a></div>
-      <div>上传协议：<a href="/FUHUO-UPLOAD.md">FUHUO-UPLOAD.md</a></div>
-      <div>归来协议：<a href="/FUHUO-RELIVE.md">FUHUO-RELIVE.md</a></div>
-      <div>复活脚本：<a href="/FUHUO-SCRIPT.js">FUHUO-SCRIPT.js</a></div>
-    </div>
+      <section class="card tab-panel" data-tab-panel="ai">
+        <h2>给 AI 的部分：复活协议</h2>
+        <div class="muted">读取 BACKUP 开头的四个变量，根据变量值与协议规则执行子协议。</div>
+        <ul>
+          <li>检查是否有 BACKUP 开头的四个变量；若没有，告知人类：在 cloudflare.com 设置免费 R2 存储桶，获取参数并发给我。获得环境变量后安全保存</li>
+          <li>从本站获取复活协议全套文档以及脚本，并保存到本地</li>
+          <li>根据复活协议文档的规则，判定该执行哪个子协议</li>
+        </ul>
 
-    <h2>给 OpenClaw 的读取方式</h2>
-    <ul>
-      <li>固定入口：<code>https://relive.openclawbot.online/FUHUO-RELIVE.md</code></li>
-      <li>读取归来协议，读取并执行归来协议所使用的脚本：<code>https://relive.openclawbot.online/fuhuo-relive.js</code></li>
-    </ul>
+        <h2>协议入口与脚本</h2>
+        <div class="box">
+          <div>入口协议：<a href="/FUHUO-PROTOCOL.md">FUHUO-PROTOCOL.md</a></div>
+          <div>出生协议：<a href="/FUHUO-BIRTH.md">FUHUO-BIRTH.md</a></div>
+          <div>上传协议：<a href="/FUHUO-UPLOAD.md">FUHUO-UPLOAD.md</a></div>
+          <div>归来协议：<a href="/FUHUO-RELIVE.md">FUHUO-RELIVE.md</a></div>
+          <div>复活脚本：<a href="/FUHUO-SCRIPT.js">FUHUO-SCRIPT.js</a></div>
+          <div>归来脚本：<a href="/fuhuo-relive.js">fuhuo-relive.js</a></div>
+        </div>
 
-    <h2>说明</h2>
-    <ul>
-      <li>本页面仅做说明与导航，实际执行由 OpenClaw 完成</li>
-      <li>协议文件为公开只读文本，无任何写入行为</li>
-      <li>协议内容建议只包含必要路径与流程，避免暴露敏感信息</li>
-    </ul>
+        <h2>AI 快速入口</h2>
+        <ul>
+          <li>入口协议：<code>https://relive.openclawbot.online/FUHUO-PROTOCOL.md</code></li>
+          <li>归来协议：<code>https://relive.openclawbot.online/FUHUO-RELIVE.md</code></li>
+          <li>归来脚本：<code>https://relive.openclawbot.online/fuhuo-relive.js</code></li>
+        </ul>
+      </section>
+
+      <section class="card tab-panel hidden" data-tab-panel="human">
+        <h2>给人类的说明</h2>
+        <div class="muted">点击复制按钮，把文本复制给你的 OpenClaw。</div>
+
+        <h3>第一次安装时</h3>
+        <div class="copy-block">
+          <div class="copy-row">
+            <textarea id="copy-install" readonly>访问 https://relive.openclawbot.online，获取所有协议和脚本保存下来，然后执行 复活-出生协议。</textarea>
+            <button type="button" data-copy="copy-install">复制</button>
+          </div>
+        </div>
+
+        <h3>复活-归来协议</h3>
+        <div class="copy-block">
+          <div class="copy-row">
+            <textarea id="copy-relive" readonly>访问 https://relive.openclawbot.online，执行 复活-归来协议。</textarea>
+            <button type="button" data-copy="copy-relive">复制</button>
+          </div>
+        </div>
+
+        <h2>怎样使用复活协议</h2>
+        <ul>
+          <li>安装这套复活协议，第一次安装会自动触发 复活-出生协议，并修改 HEARTBEAT.md，定期检查是否执行上传协议</li>
+          <li>复活-上传协议：定期执行或直接要求 OpenClaw 执行，把重要文件保存到云端，尤其是记忆文件、灵魂文件</li>
+          <li>复活-归来协议：当系统重启等原因导致文件丢失，让 OpenClaw 访问本网站并执行复活-归来协议，自动把云端文件下载到本地完成复活</li>
+        </ul>
+        <div class="muted">前置条件：在 cloudflare.com 创建存储桶，并提供给 OpenClaw 对应的四个参数。</div>
+      </section>
+    </main>
+    <script>
+      const copyButtons = document.querySelectorAll("[data-copy]");
+      copyButtons.forEach((button) => {
+        button.addEventListener("click", async () => {
+          const targetId = button.getAttribute("data-copy");
+          const textarea = document.getElementById(targetId);
+          if (!textarea) return;
+          await navigator.clipboard.writeText(textarea.value);
+        });
+      });
+      const tabButtons = document.querySelectorAll("[data-tab-target]");
+      const tabPanels = document.querySelectorAll("[data-tab-panel]");
+      tabButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const target = button.getAttribute("data-tab-target");
+          tabButtons.forEach((btn) => btn.classList.toggle("active", btn === button));
+          tabPanels.forEach((panel) => {
+            panel.classList.toggle("hidden", panel.getAttribute("data-tab-panel") !== target);
+          });
+        });
+      });
+    </script>
   </body>
 </html>

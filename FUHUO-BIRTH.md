@@ -35,6 +35,12 @@ node /root/clawd/scripts/fuhuo_upload.js
 
 参考：[FUHUO-UPLOAD.md](./FUHUO-UPLOAD.md)
 
+### 3. 修改HEARTBEAT.md
+
+将HEARTBEAT.md中增加一项规则：
+
+执行复活协议，并判断是否需要执行 复活-上传协议，如果需要执行，就执行。
+
 ## 脚本路径
 
 - 文件树生成：`/root/clawd/scripts/generate_file_tree.js`
