@@ -3,7 +3,7 @@
 ## 目标
 生成本地 `FUHUO-FILES-TREE.json` 并执行差异化上传与删除同步。
 
-## 需要的环境变量
+## 用env | grep BACKUP 命令读取这些变量
 
 - BACKUP_R2_ACCESS_KEY_ID
 - BACKUP_R2_SECRET_ACCESS_KEY

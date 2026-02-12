@@ -3,7 +3,7 @@
 ## 目标
 从独立 R2 存储桶恢复文件到本地，覆盖本地对应路径。
 
-## 需要的环境变量
+## 用 env | grep BACKUP 命令读取这些变量
 
 - BACKUP_R2_ACCESS_KEY_ID
 - BACKUP_R2_SECRET_ACCESS_KEY

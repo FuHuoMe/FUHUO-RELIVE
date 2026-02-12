@@ -7,7 +7,9 @@
 
 1. 根目录是否存在 `FUHUO-FILES-TREE.json`（默认：`/root/clawd/FUHUO-FILES-TREE.json`）
 
-2. 是否能读取以下环境变量且值不为空：
+2. 用env | grep BACKUP 命令读取以下环境变量且值不为空：
+
+   - BACKUP_R2_ACCOUNT_ID
    - BACKUP_R2_ACCESS_KEY_ID
    - BACKUP_R2_SECRET_ACCESS_KEY
    - BACKUP_R2_ACCOUNT_ID
