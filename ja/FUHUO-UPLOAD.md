@@ -46,9 +46,9 @@ cd /root/clawd
 npm install @aws-sdk/client-s3
 ```
 
-2. スクリプトを `/root/clawd/scripts/fuhuo_upload.js` に保存（保存済み）
+2. スクリプトを `/root/clawd/fuhuo/fuhuo_upload.js` に保存（保存済み）
 
 3. 上传を実行
 ```bash
-node /root/clawd/scripts/fuhuo_upload.js
+node /root/clawd/fuhuo/fuhuo_upload.js
 ```

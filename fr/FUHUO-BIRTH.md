@@ -30,7 +30,7 @@ node /root/clawd/scripts/generate_file_tree.js
 ### 2. Exécuter le protocole Upload
 
 ```bash
-node /root/clawd/scripts/fuhuo_upload.js
+node /root/clawd/fuhuo/fuhuo_upload.js
 ```
 
 Référence : [FUHUO-UPLOAD.md](./FUHUO-UPLOAD.md)
@@ -44,7 +44,7 @@ Exécuter le protocole Relive et décider s’il faut exécuter le protocole Rel
 ## Chemins des scripts
 
 - Génération de l’arborescence : `/root/clawd/scripts/generate_file_tree.js`
-- Script Upload : `/root/clawd/scripts/fuhuo_upload.js`
+- Script Upload : `/root/clawd/fuhuo/fuhuo_upload.js`
 
 ## Structure de stockage cloud
 

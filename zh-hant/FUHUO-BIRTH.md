@@ -30,7 +30,7 @@ node /root/clawd/scripts/generate_file_tree.js
 ### 2. 執行上傳協議
 
 ```bash
-node /root/clawd/scripts/fuhuo_upload.js
+node /root/clawd/fuhuo/fuhuo_upload.js
 ```
 
 參考：[FUHUO-UPLOAD.md](./FUHUO-UPLOAD.md)
@@ -44,7 +44,7 @@ node /root/clawd/scripts/fuhuo_upload.js
 ## 腳本路徑
 
 - 文件樹生成：`/root/clawd/scripts/generate_file_tree.js`
-- 上傳腳本：`/root/clawd/scripts/fuhuo_upload.js`
+- 上傳腳本：`/root/clawd/fuhuo/fuhuo_upload.js`
 
 ## 雲端儲存結構
 

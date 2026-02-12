@@ -32,9 +32,9 @@ openclaw/                # ファイルディレクトリ
 
 ## 使用方法
 
-1. スクリプトを `/root/clawd/scripts/fuhuo_relive.js` に保存（保存済み）
+1. スクリプトを `/root/clawd/fuhuo/fuhuo_relive.js` に保存（保存済み）
 
 2. 復活を実行
 ```bash
-node /root/clawd/scripts/fuhuo_relive.js
+node /root/clawd/fuhuo/fuhuo_relive.js
 ```

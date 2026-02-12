@@ -32,9 +32,9 @@ openclaw/                # 文件目錄
 
 ## 使用方式
 
-1. 將腳本保存為 `/root/clawd/scripts/fuhuo_relive.js`（已保存）
+1. 將腳本保存為 `/root/clawd/fuhuo/fuhuo_relive.js`（已保存）
 
 2. 執行歸來
 ```bash
-node /root/clawd/scripts/fuhuo_relive.js
+node /root/clawd/fuhuo/fuhuo_relive.js
 ```

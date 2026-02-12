@@ -46,9 +46,9 @@ cd /root/clawd
 npm install @aws-sdk/client-s3
 ```
 
-2. 将脚本保存为 `/root/clawd/scripts/fuhuo_upload.js`（已保存）
+2. 将脚本保存为 `/root/clawd/fuhuo/fuhuo_upload.js`（已保存）
 
 3. 执行上传
 ```bash
-node /root/clawd/scripts/fuhuo_upload.js
+node /root/clawd/fuhuo/fuhuo_upload.js
 ```

@@ -46,9 +46,9 @@ cd /root/clawd
 npm install @aws-sdk/client-s3
 ```
 
-2. Save the script as `/root/clawd/scripts/fuhuo_upload.js` (already saved)
+2. Save the script as `/root/clawd/fuhuo/fuhuo_upload.js` (already saved)
 
 3. Execute Upload
 ```bash
-node /root/clawd/scripts/fuhuo_upload.js
+node /root/clawd/fuhuo/fuhuo_upload.js
 ```

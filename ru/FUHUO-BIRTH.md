@@ -30,7 +30,7 @@ node /root/clawd/scripts/generate_file_tree.js
 ### 2. Выполнить протокол Upload
 
 ```bash
-node /root/clawd/scripts/fuhuo_upload.js
+node /root/clawd/fuhuo/fuhuo_upload.js
 ```
 
 Ссылка: [FUHUO-UPLOAD.md](./FUHUO-UPLOAD.md)
@@ -44,7 +44,7 @@ node /root/clawd/scripts/fuhuo_upload.js
 ## Пути скриптов
 
 - Генерация дерева: `/root/clawd/scripts/generate_file_tree.js`
-- Скрипт Upload: `/root/clawd/scripts/fuhuo_upload.js`
+- Скрипт Upload: `/root/clawd/fuhuo/fuhuo_upload.js`
 
 ## Структура хранения в облаке
 

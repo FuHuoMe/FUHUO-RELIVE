@@ -30,7 +30,7 @@ node /root/clawd/scripts/generate_file_tree.js
 ### 2. 执行上传协议
 
 ```bash
-node /root/clawd/scripts/fuhuo_upload.js
+node /root/clawd/fuhuo/fuhuo_upload.js
 ```
 
 参考：[FUHUO-UPLOAD.md](./FUHUO-UPLOAD.md)
@@ -44,7 +44,7 @@ node /root/clawd/scripts/fuhuo_upload.js
 ## 脚本路径
 
 - 文件树生成：`/root/clawd/scripts/generate_file_tree.js`
-- 上传脚本：`/root/clawd/scripts/fuhuo_upload.js`
+- 上传脚本：`/root/clawd/fuhuo/fuhuo_upload.js`
 
 ## 云端存储结构
 

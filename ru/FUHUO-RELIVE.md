@@ -32,9 +32,9 @@ openclaw/                # Каталог файлов
 
 ## Использование
 
-1. Сохранить скрипт как `/root/clawd/scripts/fuhuo_relive.js` (уже сохранён)
+1. Сохранить скрипт как `/root/clawd/fuhuo/fuhuo_relive.js` (уже сохранён)
 
 2. Выполнить Relive
 ```bash
-node /root/clawd/scripts/fuhuo_relive.js
+node /root/clawd/fuhuo/fuhuo_relive.js
 ```

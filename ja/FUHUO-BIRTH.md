@@ -30,7 +30,7 @@ node /root/clawd/scripts/generate_file_tree.js
 ### 2. 上传协议 を実行
 
 ```bash
-node /root/clawd/scripts/fuhuo_upload.js
+node /root/clawd/fuhuo/fuhuo_upload.js
 ```
 
 参照：[FUHUO-UPLOAD.md](./FUHUO-UPLOAD.md)
@@ -44,7 +44,7 @@ HEARTBEAT.md にルールを追加：
 ## スクリプトのパス
 
 - ファイルツリー生成：`/root/clawd/scripts/generate_file_tree.js`
-- 上传スクリプト：`/root/clawd/scripts/fuhuo_upload.js`
+- 上传スクリプト：`/root/clawd/fuhuo/fuhuo_upload.js`
 
 ## クラウド保存構造
 
