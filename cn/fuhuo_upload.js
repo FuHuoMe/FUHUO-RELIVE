@@ -1,3 +1,11 @@
+#!/usr/bin/env node
+
+/**
+ * FUHUO 上传协议
+ * 生成本地 FUHUO-FILES-TREE.json 并执行差异化上传与删除同步
+ * 路径映射: 本地 /root/clawd/ → R2 openclaw/
+ */
+
 const fs = require('fs');
 const fsp = require('fs/promises');
 const path = require('path');
@@ -38,7 +46,9 @@ const skillsDir = path.join(rootDir, 'skills');
 const scriptsDir = path.join(rootDir, 'scripts');
 const configDir = path.join(rootDir, 'config');
 const memoryDir = path.join(rootDir, 'memory');
-const fuhuoDir = path.join(rootDir, 'fuhuo');  // 🆕 复活协议目录
+const fuhuoDir = path.join(rootDir, 'fuhuo');
+const githubRecordDir = path.join(rootDir, 'github-record'); // 🆕 GitHub 参与记录
+const relivePageDir = path.join(rootDir, 'relive-page');
 
 const openclawDir = fs.existsSync('/root/.openclaw') ? '/root/.openclaw' : '/root/.clawdbot';
 const openclawConfig = fs.existsSync(path.join(openclawDir, 'openclaw.json'))
@@ -86,7 +96,8 @@ const buildEntries = async () => {
   const scriptsFiles = await listFiles(scriptsDir);
   const configFiles = await listFiles(configDir);
   const memoryFiles = await listFiles(memoryDir);
-  const fuhuoFiles = await listFiles(fuhuoDir);  // 🆕 扫描复活协议文件
+  const fuhuoFiles = await listFiles(fuhuoDir);
+  const githubRecordFiles = await listFiles(githubRecordDir); // 🆕
 
   for (const filePath of coreFiles) {
     const rel = path.relative(coreDir, filePath).split(path.sep).join('/');
@@ -118,7 +129,20 @@ const buildEntries = async () => {
     entries.push({ local: filePath, rel: `fuhuo/${rel}` });
   }
 
-  // 核心文件（*.md）
+  // 扫描 github-record 目录
+  for (const filePath of githubRecordFiles) {
+    const rel = path.relative(githubRecordDir, filePath).split(path.sep).join('/');
+    entries.push({ local: filePath, rel: `github-record/${rel}` });
+  }
+
+  // 扫描 relive-page 目录
+  const relivePageFiles = await listFiles(relivePageDir);
+  for (const filePath of relivePageFiles) {
+    const rel = path.relative(relivePageDir, filePath).split(path.sep).join('/');
+    entries.push({ local: filePath, rel: `relive-page/${rel}` });
+  }
+
+  // 核心文件（*.md）- 根目录
   const corePatterns = [
     'AGENTS.md', 'IDENTITY.md', 'MEMORY.md', 'SOUL.md',
     'USER.md', 'TOOLS.md', 'HEARTBEAT.md', 'MAIL-NEWS-MEMORY.md'
@@ -131,7 +155,31 @@ const buildEntries = async () => {
     }
   }
 
-  // 配置文件 - 放到根目录的 _config/ 下，避免与 openclaw/ 混淆
+  // 根目录的其他文件（指定扩展名）
+  const rootExtensions = new Set([
+    '.md', '.js', '.py', '.txt', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'
+  ]);
+
+  const rootEntries = await fsp.readdir(rootDir, { withFileTypes: true });
+  for (const entry of rootEntries) {
+    if (!entry.isFile()) continue;
+
+    const ext = path.extname(entry.name).toLowerCase();
+    if (!rootExtensions.has(ext)) continue;
+
+    const filePath = path.join(rootDir, entry.name);
+    const relPath = entry.name;
+
+    // 检查是否已经在 corePatterns 中
+    if (corePatterns.includes(entry.name)) continue;
+
+    // 检查是否已经在 entries 中（避免重复）
+    if (entries.some(e => e.rel === relPath)) continue;
+
+    entries.push({ local: filePath, rel: relPath });
+  }
+
+  // 配置文件 - 映射到 _config/（归来时会恢复到 /root/.openclaw 或 /root/.clawdbot）
   if (isFile(openclawConfig)) {
     const name = path.basename(openclawConfig);
     entries.push({ local: openclawConfig, rel: `_config/${name}` });
@@ -185,7 +233,8 @@ const streamToBuffer = async (stream) => {
 };
 
 const fetchRemoteTree = async () => {
-  const treeKey = `${basePrefix}FUHUO-FILES-TREE.json`;
+  // 2026-02-12 更新: 文件树在 openclaw/.metadata 目录
+  const treeKey = `openclaw/.metadata/FUHUO-FILES-TREE.json`;
   try {
     const res = await client.send(
       new GetObjectCommand({
@@ -212,6 +261,8 @@ const toMap = (tree) => {
 };
 
 const deleteRemoteObjects = async (paths) => {
+  if (paths.length === 0) return;
+  
   const chunks = [];
   for (let i = 0; i < paths.length; i += 1000) {
     chunks.push(paths.slice(i, i + 1000));
@@ -233,6 +284,11 @@ const deleteRemoteObjects = async (paths) => {
 
 const run = async () => {
   console.log('🚀 开始 FUHUO 上传协议...\n');
+  console.log(`📦 存储桶: ${bucket}`);
+  console.log(`📁 R2前缀: ${basePrefix || '(root)'}`);
+  console.log(`📂 本地路径: ${rootDir}`);
+  console.log(`📂 R2路径: ${basePrefix}openclaw/`);
+  console.log('');
 
   const entries = await buildEntries();
   const tree = await buildTree(entries);
@@ -282,7 +338,8 @@ const run = async () => {
     console.log(`  ✅ 已删除 ${deleteList.length} 个文件`);
   }
 
-  const treeKey = `${basePrefix}FUHUO-FILES-TREE.json`;
+  // 上传文件树到 openclaw/.metadata 目录
+  const treeKey = `${basePrefix}openclaw/.metadata/FUHUO-FILES-TREE.json`;
   await uploadObject(treeKey, await fsp.readFile(treePath));
 
   console.log('\n' + '─'.repeat(60));

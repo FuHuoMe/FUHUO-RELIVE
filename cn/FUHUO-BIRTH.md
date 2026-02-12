@@ -11,7 +11,6 @@
 - `/root/clawd/scripts`
 - `/root/clawd/config`
 - `/root/clawd/memory`
-- `/root/clawd/fuhuo`
 - `/root/.openclaw/openclaw.json` 或 `/root/.clawdbot/clawdbot.json`
 - `/root/clawd/*.md` 核心文件（AGENTS/IDENTITY/MEMORY/SOUL/USER/TOOLS/HEARTBEAT/MAIL-NEWS-MEMORY）
 
@@ -21,30 +20,8 @@
 
 ## 执行步骤
 
-### 1. 生成本地文件树
-
-```bash
-node /root/clawd/scripts/generate_file_tree.js
-```
-
-### 2. 执行上传协议
-
-```bash
-node /root/clawd/fuhuo/fuhuo_upload.js
-```
-
-参考：[FUHUO-UPLOAD.md](./FUHUO-UPLOAD.md)
-
-### 3. 修改HEARTBEAT.md
-
-将HEARTBEAT.md中增加一项规则：
-
-执行复活协议，并判断是否需要执行 复活-上传协议，如果需要执行，就执行。
-
-## 脚本路径
-
-- 文件树生成：`/root/clawd/scripts/generate_file_tree.js`
-- 上传脚本：`/root/clawd/fuhuo/fuhuo_upload.js`
+1. 生成本地 `FUHUO-FILES-TREE.json`
+2. 执行 **上传协议** FUHUO-UPLOAD.md 将本地基线与文件上传到云端
 
 ## 云端存储结构
 
@@ -63,11 +40,5 @@ openclaw/                # 文件目录
 ├── scripts/
 ├── skills/
 ├── fuhuo/
-└── _config/
+└── openclaw/
 ```
-
-## 使用场景
-
-- **首次部署**：初始化云端备份
-- **重置备份**：清空云端后重新建立基线
-- **迁移存储**：更换存储桶时重建
