@@ -11,7 +11,7 @@
  *    - BACKUP_R2_SECRET_ACCESS_KEY
  *    - BACKUP_R2_ACCOUNT_ID
  *    - BACKUP_R2_BUCKET_NAME
- * 2. 运行: node fuhuo_relive.js
+ * 2. 运行: node fuhuo_relive_standalone.js
  */
 
 const https = require('https');
