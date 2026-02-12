@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 
 /**
- * FUHUO 归来协议 - 自包含版本
- * 从 R2 存储桶恢复文件到本地
- * 只依赖 Node.js 内置模块，无需安装任何包
+ * Протокол FUHUO Relive — автономная версия
+ * Восстановление файлов из бакета R2 локально
+ * Используются только встроенные модули Node.js, без пакетов
  *
- * 使用方法：
- * 1. 确保环境变量已设置：
+ * Использование:
+ * 1. Убедитесь, что переменные окружения установлены:
  *    - BACKUP_R2_ACCESS_KEY_ID
  *    - BACKUP_R2_SECRET_ACCESS_KEY
  *    - BACKUP_R2_ACCOUNT_ID
  *    - BACKUP_R2_BUCKET_NAME
- * 2. 运行: node fuhuo_relive.js
+ * 2. Запуск: node fuhuo_relive.js
  */
 
 const https = require('https');
@@ -20,7 +20,7 @@ const fs = require('fs');
 const fsp = require('fs/promises');
 const path = require('path');
 
-// 检查环境变量
+// Проверка переменных окружения
 const required = [
   'BACKUP_R2_ACCESS_KEY_ID',
   'BACKUP_R2_SECRET_ACCESS_KEY',
@@ -45,7 +45,7 @@ const rootDir = '/root/clawd';
 const openclawDir = fs.existsSync('/root/.openclaw') ? '/root/.openclaw' : '/root/.clawdbot';
 
 /**
- * AWS Signature V4 签名
+ * Подпись AWS Signature V4
  */
 function getAuthHeaders(method, path, queryParams = {}) {
   const now = new Date();
@@ -54,28 +54,28 @@ function getAuthHeaders(method, path, queryParams = {}) {
   const service = 's3';
   const region = 'auto';
 
-  // 构建查询字符串
+  // Сформировать строку запроса
   const queryString = Object.entries(queryParams)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
     .join('&');
 
-  // 规范化 URI
+  // Нормализовать URI
   const canonicalUri = path;
 
-  // 规范化查询字符串
+  // Нормализовать строку запроса
   const canonicalQuery = queryString;
 
-  // 规范化头
+  // Нормализовать заголовки
   const canonicalHeaders = `host:${bucket}.${accountId}.r2.cloudflarestorage.com\nx-amz-content-sha256:UNSIGNED-PAYLOAD\nx-amz-date:${amzDate}\n`;
 
-  // 签名头列表
+  // Список подписываемых заголовков
   const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
 
-  // 请求哈希
+  // Хэш запроса
   const payloadHash = 'UNSIGNED-PAYLOAD';
 
-  // 规范请求
+  // Канонический запрос
   const canonicalRequest = [
     method,
     canonicalUri,
@@ -87,7 +87,7 @@ function getAuthHeaders(method, path, queryParams = {}) {
 
   const canonicalRequestHash = crypto.createHash('sha256').update(canonicalRequest).digest('hex');
 
-  // 待签名字符串
+  // Строка для подписи
   const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
   const stringToSign = [
     'AWS4-HMAC-SHA256',
@@ -96,16 +96,16 @@ function getAuthHeaders(method, path, queryParams = {}) {
     canonicalRequestHash
   ].join('\n');
 
-  // 计算签名密钥
+  // Сформировать ключ подписи
   const kDate = hmacSha256(`AWS4${process.env.BACKUP_R2_SECRET_ACCESS_KEY}`, dateStamp);
   const kRegion = hmacSha256(kDate, region);
   const kService = hmacSha256(kRegion, service);
   const kSigning = hmacSha256(kService, 'aws4_request');
 
-  // 计算签名
+  // Вычислить подпись
   const signature = crypto.createHmac('sha256', kSigning).update(stringToSign).digest('hex');
 
-  // 构造授权头
+  // Сформировать заголовок авторизации
   const authorization = `AWS4-HMAC-SHA256 Credential=${process.env.BACKUP_R2_ACCESS_KEY_ID}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
   return {
@@ -120,7 +120,7 @@ function hmacSha256(key, data) {
 }
 
 /**
- * 发送 HTTPS 请求
+ * Отправить HTTPS-запрос
  */
 function request(method, key) {
   return new Promise((resolve, reject) => {
@@ -156,14 +156,14 @@ function request(method, key) {
 }
 
 /**
- * 获取远程文件
+ * Получить удалённый объект
  */
 async function fetchObject(key) {
   return await request('GET', key);
 }
 
 /**
- * 解析文件树
+ * Разобрать дерево файлов
  */
 function parseTree(content) {
   const data = JSON.parse(content);
@@ -172,7 +172,7 @@ function parseTree(content) {
 }
 
 /**
- * 安全路径拼接
+ * Безопасное объединение путей
  */
 function safeJoin(base, rel) {
   const normalized = path.normalize(rel);
@@ -183,17 +183,17 @@ function safeJoin(base, rel) {
 }
 
 /**
- * 恢复单个文件
+ * Восстановить один файл
  */
 async function restoreFile(rel) {
-  // R2 路径: openclaw/xxx → 本地: /root/clawd/xxx
+  // Путь в R2: openclaw/xxx → локально: /root/clawd/xxx
   const r2Key = `${basePrefix}openclaw/${rel}`;
   const data = await fetchObject(r2Key);
 
   let targetBase = rootDir;
   let targetRel = rel;
 
-  // 特殊处理: _config/ → /root/.openclaw 或 /root/.clawdbot
+  // Особая обработка: _config/ → /root/.openclaw или /root/.clawdbot
   if (rel.startsWith('_config/')) {
     targetBase = openclawDir;
     targetRel = rel.slice('_config/'.length);
@@ -207,7 +207,7 @@ async function restoreFile(rel) {
 }
 
 /**
- * 主函数
+ * Основная функция
  */
 async function main() {
   console.log('🔄 开始 FUHUO 归来协议...\n');
@@ -217,8 +217,8 @@ async function main() {
   console.log(`💾 本地路径: ${rootDir}`);
   console.log('');
 
-  // 获取文件树
-  // 2026-02-12 更新: 文件树在 openclaw/.metadata 目录
+  // Получить дерево файлов
+  // Обновление 2026-02-12: дерево файлов находится в openclaw/.metadata
   const treeKey = `openclaw/.metadata/FUHUO-FILES-TREE.json`;
   console.log(`📋 读取文件树: ${treeKey}`);
 
@@ -229,7 +229,7 @@ async function main() {
 
     console.log(`📋 找到 ${relPaths.length} 个文件需要恢复\n`);
 
-    // 恢复文件
+    // Восстановить файлы
     let successCount = 0;
     let failCount = 0;
 
@@ -245,7 +245,7 @@ async function main() {
       }
     }
 
-    // 保存本地文件树
+    // Сохранить локальное дерево файлов
     const localTreePath = path.join(rootDir, 'FUHUO-FILES-TREE.json');
     await fsp.writeFile(localTreePath, treeContent);
     console.log(`\n📋 本地文件树已更新: ${localTreePath}`);
