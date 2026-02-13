@@ -22,7 +22,10 @@ const SCAN_DIRS = [
   'fuhuo',         // 🆕 添加 fuhuo 目录（复活协议文档）
   'github-record', // 🆕 添加 github-record 目录（GitHub 参与记录）
   'plan',          // 🆕 添加 plan 目录（工作计划）
+  'relive-page',   // 🆕 添加 relive-page 目录（归来页面）
   'summary',       // 🆕 添加 summary 目录（工作总结）
+  'cyber-expedition', // 🆕 添加 cyber-expedition 目录（赛博探索）
+  // 'LoongClaw',    // ❌ 已排除 - 独立 GitHub 仓库: https://github.com/FuHuoMe/loongclaw
 ];
 
 // 扫描文件配置（绝对路径）
@@ -65,6 +68,8 @@ const EXCLUDE_DIRS = [
   '.pytest_cache',
   'dist',
   'build',
+  'loongclaw',       // ❌ 排除 LoongClaw 项目（独立仓库：https://github.com/FuHuoMe/loongclaw）
+  'openclaw-cn-npm', // ❌ 排除 openclaw-cn-npm 项目（独立仓库，待创建）
 ];
 
 /**
@@ -186,14 +191,29 @@ function main() {
   // 扫描单个文件
   console.log('📄 扫描配置文件...');
   for (const filePath of SCAN_FILES) {
-    const files = scanFile(filePath, BASE_DIR);
-    fileTree.files.push(...files);
+    if (!fs.existsSync(filePath)) continue;
 
-    totalFiles += files.length;
-    totalSize += files.reduce((sum, f) => sum + f.size, 0);
+    try {
+      const stats = fs.statSync(filePath);
+      const fileHash = calculateHash(filePath);
 
-    if (files.length > 0) {
-      console.log(`   ✅ ${path.basename(filePath)}`);
+      // 映射到 _config/ 前缀
+      const configFileName = path.basename(filePath);
+      const relativePath = `_config/${configFileName}`;
+
+      fileTree.files.push({
+        path: relativePath,
+        hash: fileHash,
+        size: stats.size,
+        mtimeMs: stats.mtimeMs,
+      });
+
+      totalFiles += 1;
+      totalSize += stats.size;
+
+      console.log(`   ✅ ${configFileName}`);
+    } catch (error) {
+      console.warn(`⚠️  无法读取文件: ${filePath} - ${error.message}`);
     }
   }
 

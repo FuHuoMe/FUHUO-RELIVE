@@ -3,7 +3,7 @@
 ## 目标
 生成本地 `FUHUO-FILES-TREE.json` 并执行差异化上传与删除同步。
 
-## 用env | grep BACKUP 命令读取这些变量
+## 需要的环境变量
 
 - BACKUP_R2_ACCESS_KEY_ID
 - BACKUP_R2_SECRET_ACCESS_KEY
@@ -60,26 +60,3 @@ node /root/clawd/fuhuo/fuhuo_upload.js
 - ✅ 无需 `npm install`
 - ✅ 自动差量同步
 - ✅ 支持批量删除
-
----
-
-## 生成文件树
-
-**重要**: 在执行上传前，需要先生成文件树索引：
-
-```bash
-# 切换到 fuhuo 目录
-cd /root/clawd/fuhuo
-
-# 生成文件树
-node generate_file_tree.js
-
-# 执行上传
-cd /root/clawd
-node fuhuo/fuhuo_upload.js
-```
-
-**说明**：
-- `generate_file_tree.js` 会扫描所有目录并生成 `FUHUO-FILES-TREE.json`
-- 上传协议使用此文件树进行差量同步
-- 每次上传前建议重新生成文件树

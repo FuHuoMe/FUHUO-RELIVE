@@ -253,6 +253,7 @@ async function buildEntries() {
     { path: path.join(rootDir, 'github-record'), prefix: 'github-record' },
     { path: path.join(rootDir, 'plan'), prefix: 'plan' },
     { path: path.join(rootDir, 'relive-page'), prefix: 'relive-page' },
+    { path: path.join(rootDir, 'summary'), prefix: 'summary' },
   ];
 
   // 扫描目录
@@ -378,10 +379,24 @@ async function main() {
   console.log(`📂 R2路径: ${basePrefix}openclaw/`);
   console.log('');
 
-  // 构建文件条目和树
-  const entries = await buildEntries();
-  const tree = await buildTree(entries);
-  const treePath = await writeTreeFile(tree);
+  // 0️⃣ 先使用 FUHUO 独立脚本生成文件树
+  console.log('📊 步骤 0: 生成本地文件树...');
+  try {
+    const { execSync } = require('child_process');
+    execSync('node /root/clawd/fuhuo/generate_file_tree.js', {
+      stdio: 'inherit',
+      cwd: '/root/clawd/fuhuo'
+    });
+    console.log('');
+  } catch (err) {
+    console.error('❌ 文件树生成失败:', err.message);
+    process.exit(1);
+  }
+
+  // 读取生成的文件树
+  const treePath = path.join(rootDir, 'FUHUO-FILES-TREE.json');
+  const treeContent = await fsp.readFile(treePath, 'utf8');
+  const tree = JSON.parse(treeContent);
 
   // 获取远程文件树
   const remoteTree = await fetchRemoteTree();
@@ -415,10 +430,25 @@ async function main() {
   if (uploadList.length > 0) {
     console.log('开始上传文件...');
     for (const rel of uploadList) {
-      const entry = entries.find((item) => item.rel === rel);
-      if (!entry) continue;
+      // 从文件树中获取本地路径
+      let localPath;
 
-      const data = await fsp.readFile(entry.local);
+      // 特殊处理 _config/ 路径
+      if (rel.startsWith('_config/')) {
+        const configFileName = rel.slice('_config/'.length);
+        if (fs.existsSync(`/root/.openclaw/${configFileName}`)) {
+          localPath = `/root/.openclaw/${configFileName}`;
+        } else if (fs.existsSync(`/root/.clawdbot/${configFileName}`)) {
+          localPath = `/root/.clawdbot/${configFileName}`;
+        } else {
+          console.error(`  ❌ 配置文件不存在: ${rel}`);
+          continue;
+        }
+      } else {
+        localPath = path.join(rootDir, rel);
+      }
+
+      const data = await fsp.readFile(localPath);
       const key = `${basePrefix}openclaw/${rel}`;
       await putObject(key, data);
       console.log(`  ✅ ${rel}`);
