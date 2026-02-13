@@ -2,13 +2,13 @@
 /**
  * FUHUO 协议检查脚本 (自包含版本)
  * 根据 FUHUO-PROTOCOL 规则检查是否需要执行上传或归来协议
+ * 并检查是否需要执行 GitHub 第三备份
  *
- * 只依赖 Node.js 内置模块，使用自包含 R2 客户端
+ * 只依赖 Node.js 内置模块，使用 FUHUO 独立脚本
  */
 
 const fs = require('fs');
 const r2 = require('./lib/r2-client-native');
-const { generate } = require('./lib/generate_tree');
 
 const getLocalTree = () => {
   const treePath = '/root/clawd/FUHUO-FILES-TREE.json';
@@ -50,7 +50,12 @@ const run = async () => {
   // 0️⃣ 先生成最新的本地文件树
   console.log('📊 步骤 0: 生成本地文件树...');
   try {
-    await generate();
+    // 使用 FUHUO 独立的文件树生成脚本
+    const { execSync } = require('child_process');
+    execSync('node /root/clawd/fuhuo/generate_file_tree.js', {
+      stdio: 'inherit',
+      cwd: '/root/clawd/fuhuo'
+    });
     console.log('');
   } catch (err) {
     console.error('⚠️  文件树生成失败:', err.message);
@@ -135,17 +140,56 @@ const run = async () => {
   console.log('─'.repeat(60));
 
   // 返回需要执行的动作
-  return action;
+  return { action, needsUpload: action === 'UPLOAD' };
+};
+
+/**
+ * GitHub 第三备份检查
+ * 只有在 R2 需要上传时才执行 GitHub 备份
+ * 因为 GitHub 备份是 R2 的镜像
+ */
+const checkGitHubBackup = async () => {
+  console.log('\n📊 步骤 4: 检查 GitHub 第三备份');
+
+  // 检查 GitHub 记录是否存在
+  const githubRecordPath = '/root/clawd/github-record';
+  if (!fs.existsSync(githubRecordPath)) {
+    console.log('   ℹ️  GitHub 记录目录不存在，跳过 GitHub 备份');
+    return false;
+  }
+
+  // 检查是否有 GitHub Token
+  if (!process.env.CODER_GITHUB_TOKEN) {
+    console.log('   ℹ️  未设置 CODER_GITHUB_TOKEN，跳过 GitHub 备份');
+    return false;
+  }
+
+  console.log('   ✅ GitHub 备份条件满足，可以执行');
+  console.log('   → 脚本: node /root/clawd/scripts/github_backup.js');
+  return true;
 };
 
 run()
-  .then((action) => {
-    console.log('📊 步骤 3: 检查完成');
+  .then(async ({ action, needsUpload }) => {
+    console.log('\n📊 步骤 3: FUHUO 协议检查完成');
+
     if (action !== 'NONE') {
       console.log(`\n⚠️  需要执行 FUHUO 协议: ${action}`);
+
+      // 如果需要上传，检查 GitHub 备份
+      if (needsUpload) {
+        const canGitHubBackup = await checkGitHubBackup();
+        if (canGitHubBackup) {
+          console.log('\n📋 建议执行流程:');
+          console.log('   1. node /root/clawd/fuhuo/fuhuo_upload.js  # R2 上传');
+          console.log('   2. node /root/clawd/scripts/github_backup.js  # GitHub 备份');
+        }
+      }
+
       process.exit(1); // 非0退出码表示需要处理
     } else {
       console.log('\n✅ FUHUO 协议检查完成，无需执行操作');
+      console.log('✅ 本地与 R2 一致，无需执行 GitHub 第三备份');
       process.exit(0);
     }
   })

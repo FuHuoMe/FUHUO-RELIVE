@@ -1,87 +1,251 @@
-# FUHUO-PROTOCOL
+# FUHUO-PROTOCOL - 优化版
 
-## 目标
-在容器启动或关键节点时，自动判断是否需要执行 出生、上传或归来 子协议中的一个。
+## 🎯 核心原则
 
-## 入口检查
+**决策树只在需要比对时使用，明确指令直接执行。**
 
-1. 根目录是否存在 `FUHUO-FILES-TREE.json`（默认：`/root/clawd/FUHUO-FILES-TREE.json`）
+## 📋 触发场景分类
 
-2. 用env | grep BACKUP 命令读取以下环境变量且值不为空：
+### 场景 1: 明确归来协议（无需决策树）
 
-   - BACKUP_R2_ACCOUNT_ID
-   - BACKUP_R2_ACCESS_KEY_ID
-   - BACKUP_R2_SECRET_ACCESS_KEY
-   - BACKUP_R2_ACCOUNT_ID
-   - BACKUP_R2_BUCKET_NAME
+**触发条件**：
+- 用户明确指令："执行归来协议"、"访问fuhuo.me执行归来"
+- 容器重启后需要恢复
 
-3. 如果检查失败，必须输出完整检查结果给人类
-
-## 云端检查
-
-读取远端 BACKUP_R2_BUCKET_NAME 规定的存储桶中的 `FUHUO-FILES-TREE.json`（默认：`{BACKUP_R2_PREFIX}/FUHUO-FILES-TREE.json`，无前缀时为 `FUHUO-FILES-TREE.json`），与本地 `FUHUO-FILES-TREE.json` 比对。如果远端不存在，也被视为差异。
-
-## 云端存储结构（2026年2月12日更新）
-
+**执行逻辑**：
 ```
-{bucket}/
-└── {BACKUP_R2_PREFIX}/        # 默认: openclaw（通过环境变量指定）
-    ├── .metadata/              # 元数据目录（隐藏）
-    │   └── FUHUO-FILES-TREE.json    # 文件树索引
-    ├── AGENTS.md               # 直接映射到 /root/clawd/AGENTS.md
-    ├── IDENTITY.md             # 直接映射到 /root/clawd/IDENTITY.md
-    ├── MEMORY.md               # 直接映射到 /root/clawd/MEMORY.md
-    ├── SOUL.md                 # 直接映射到 /root/clawd/SOUL.md
-    ├── USER.md                 # 直接映射到 /root/clawd/USER.md
-    ├── TOOLS.md                # 直接映射到 /root/clawd/TOOLS.md
-    ├── HEARTBEAT.md            # 直接映射到 /root/clawd/HEARTBEAT.md
-    ├── MAIL-NEWS-MEMORY.md     # 直接映射到 /root/clawd/MAIL-NEWS-MEMORY.md
-    ├── config/                 # 直接映射到 /root/clawd/config/
-    ├── scripts/                # 直接映射到 /root/clawd/scripts/
-    ├── skills/                 # 直接映射到 /root/clawd/skills/
-    ├── fuhuo/                  # 直接映射到 /root/clawd/fuhuo/
-    └── _config/                # 直接映射到 /root/.openclaw/ 或 /root/.clawdbot/
-        └── openclaw.json
+直接执行 → 下载云端文件树 → 恢复所有文件
 ```
 
-### 路径映射规则
+**特点**：
+- ✅ 无需检查本地文件树
+- ✅ 无需比对
+- ✅ 云端必然存在（用户明确要求归来）
+- ✅ 直接覆盖本地文件
 
-**云端路径** → **本地路径**
+**脚本**: `fuhuo_relive.js`
+
+---
+
+### 场景 2: 明确上传协议（需要决策树）
+
+**触发条件**：
+- 用户明确指令："执行上传协议"、"备份到云端"
+
+**执行逻辑**：
 ```
-{bucket}/{prefix}/AGENTS.md              → /root/clawd/AGENTS.md
-{bucket}/{prefix}/MEMORY.md              → /root/clawd/MEMORY.md
-{bucket}/{prefix}/scripts/check_email.js → /root/clawd/scripts/check_email.js
+生成文件树 → 与云端比对 → 上传差异 → 更新云端文件树
 ```
 
-**规则**: 去掉 `{bucket}/{prefix}/` 前缀，直接映射到 `/root/clawd/`
+**特点**：
+- ✅ 需要生成本地文件树
+- ✅ 需要与云端比对
+- ✅ 只上传变更文件（差量同步）
+- ✅ 删除云端多余文件
 
-### 环境变量
+**脚本**: `fuhuo_upload.js`
 
-- `BACKUP_R2_PREFIX`: 备份路径前缀，默认 `openclaw`
-- 支持多环境备份（dev/staging/prod）
+---
 
-## 选择子协议
+### 场景 3: 首次安装（无需决策树）
 
-- 本地与云端都没有 `FUHUO-FILES-TREE.json`：执行 **出生协议** FUHUO-BIRTH.md
-- 本地有且云端无：执行 **上传协议** FUHUO-UPLOAD.md
-- 本地与云端都有：
-  - 存在差异：
-    - 如果云端文件数 > 本地文件数：执行 **归来协议** FUHUO-RELIVE.md
-    - 否则（本地文件数更多或相同）：执行 **上传协议** FUHUO-UPLOAD.md
-  - 无差异：不执行上传
-- 本地无且云端有：执行 **归来协议** FUHUO-RELIVE.md
+**触发条件**：
+- 用户明确指令："安装复活协议"、"首次设置"
 
-### 决策逻辑详解
+**执行逻辑**：
+```
+两边都没有 → 生成文件树 → 首次上传（出生协议）
+```
 
-当本地与云端都有文件树但存在差异时，通过比较文件数量决定协议：
+**特点**：
+- ✅ 本地无文件树
+- ✅ 云端无文件树
+- ✅ 直接执行首次上传
+- ✅ 建立基线
 
-| 场景 | 本地文件数 | 云端文件数 | 执行协议 |
-|------|-----------|-----------|---------|
-| 云端更多 | 49 | 50 | 归来协议 |
-| 本地更多 | 50 | 49 | 上传协议 |
-| 数量相同但内容不同 | 49 | 49 | 上传协议 |
+**脚本**: `fuhuo_upload.js` (首次模式)
 
-**理由**：
-- 云端更多 → 可能是容器重启后本地丢失，需要从云端恢复
-- 本地更多 → 本地有新文件，需要备份到云端
-- 数量相同但有差异 → 本地文件有修改，需要上传新版本
+---
+
+### 场景 4: 心跳检查（需要决策树）
+
+**触发条件**：
+- 定时心跳触发
+- 系统启动检查
+
+**执行逻辑**：
+```
+检查本地 → 检查云端 → 比对 → 决策：
+  - 本地有云端无 → 触发上传
+  - 云端有本地无 → 提示需要归来
+  - 都有且一致 → 无操作
+  - 都有且差异 → 比较文件数决策
+```
+
+**特点**：
+- ✅ 需要生成最新文件树
+- ✅ 需要与云端比对
+- ✅ 根据结果决策
+- ✅ 提示用户执行相应操作
+
+**脚本**: `check_fuhuo.js`
+
+---
+
+## 🔄 决策树逻辑（仅用于上传和检查）
+
+### 决策流程图
+
+```
+┌─────────────────────────────────────┐
+│         开始决策流程                │
+└─────────────────────────────────────┘
+                │
+                ▼
+    ┌───────────────────────┐
+    │ 生成本地文件树        │
+    └───────────────────────┘
+                │
+                ▼
+    ┌───────────────────────┐
+    │ 获取云端文件树        │
+    └───────────────────────┘
+                │
+        ┌───────┴───────┐
+        │               │
+    云端存在？      云端不存在
+        │               │
+        ▼               ▼
+    ┌───────────┐   ┌───────────┐
+    │ 比对差异  │   │ 全量上传  │
+    └───────────┘   └───────────┘
+        │
+    ┌───┴────┐
+    │        │
+   有差异   无差异
+    │        │
+    ▼        ▼
+┌────────┐ ┌──────┐
+│差量同步│ │完成  │
+└────────┘ └──────┘
+```
+
+### 决策规则
+
+| 本地 | 云端 | 操作 | 原因 |
+|------|------|------|------|
+| 有 | 无 | 全量上传 | 首次安装或云端丢失 |
+| 无 | 有 | **提示归来** | 需要先恢复 |
+| 有 | 有且一致 | 无操作 | 已经同步 |
+| 有 | 有且差异 | 差量上传 | 只传变更 |
+
+**注意**：心跳检查发现"本地无云端有"时，**不自动执行归来**，只提示用户。
+
+---
+
+## 📂 脚本职责
+
+### 1. fuhuo_relive.js - 归来协议
+- ✅ **无决策树**
+- ✅ 直接从云端下载
+- ✅ 覆盖本地文件
+- ✅ 不进行任何比对
+
+### 2. fuhuo_upload.js - 上传协议
+- ✅ **有决策树**
+- ✅ 生成本地文件树
+- ✅ 与云端比对
+- ✅ 差量上传
+
+### 3. check_fuhuo.js - 检查脚本
+- ✅ **有决策树**
+- ✅ 检查本地和云端
+- ✅ 比对并决策
+- ✅ 提示用户操作
+
+---
+
+## 🌐 网站指引 (fuhuo.me)
+
+### 场景 1: 执行归来协议
+```bash
+curl https://fuhuo.me/cn/fuhuo_relive.js | node -
+```
+- 无需判断，直接执行
+
+### 场景 2: 执行上传协议
+```bash
+curl https://fuhuo.me/cn/fuhuo_upload.js | node -
+```
+- 内部有决策树，自动比对
+
+### 场景 3: 首次安装
+```bash
+# 1. 下载文档和脚本
+curl -O https://fuhuo.me/cn/FUHUO-PROTOCOL.md
+curl -O https://fuhuo.me/cn/fuhuo_upload.js
+
+# 2. 执行首次上传（出生协议）
+node fuhuo_upload.js
+```
+
+---
+
+## 🔧 实现要点
+
+### 归来协议优化
+```javascript
+// ❌ 错误：检查本地文件树
+if (fs.existsSync(localTree)) { ... }
+
+// ✅ 正确：直接执行
+const remoteTree = await fetchRemoteTree();
+await restoreFiles(remoteTree);
+```
+
+### 上传协议优化
+```javascript
+// ✅ 保留决策树
+const localTree = await generateLocalTree();
+const remoteTree = await fetchRemoteTree();
+const diff = compareTrees(localTree, remoteTree);
+await uploadDiff(diff);
+```
+
+### 检查脚本优化
+```javascript
+// ✅ 保留决策树
+const result = await checkAndDecide();
+if (result.needsUpload) {
+  console.log('需要执行上传协议');
+}
+if (result.needsRelive) {
+  console.log('需要执行归来协议');
+}
+```
+
+---
+
+## 📊 优化前后对比
+
+| 场景 | 优化前 | 优化后 |
+|------|--------|--------|
+| 明确归来 | ❌ 决策树判断 | ✅ 直接执行 |
+| 明确上传 | ✅ 决策树判断 | ✅ 保留决策树 |
+| 首次安装 | ❌ 决策树判断 | ✅ 直接上传 |
+| 心跳检查 | ✅ 决策树判断 | ✅ 保留决策树 |
+
+---
+
+## ✅ 优化收益
+
+1. **性能提升** - 归来协议无需比对，直接恢复
+2. **逻辑清晰** - 明确指令无需判断
+3. **用户体验** - "执行归来"就是直接执行
+4. **维护性** - 决策树只在需要时出现
+
+---
+
+**版本**: v2.0 (优化版)
+**更新时间**: 2026-02-13
+**作者**: 熊大 🐻💪

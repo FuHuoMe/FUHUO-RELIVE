@@ -1,46 +1,16 @@
 #!/usr/bin/env node
 
 /**
- * FUHUO RELIVE PROTOCOL - 归来协议
+ * FUHUO 归来协议 - 优化版
+ * 从 R2 存储桶恢复文件到本地
  *
- * === AI 执行流程 ===
+ * 优化点：
+ * - ❌ 移除决策树逻辑
+ * - ✅ 直接从云端下载文件树
+ * - ✅ 直接恢复所有文件
+ * - ✅ 不进行任何比对
  *
- * 步骤 1：验证环境变量（必须先执行）
- *   $ env | grep BACKUP_R2
- *
- *   期望看到 4 个变量：
- *   - BACKUP_R2_ACCESS_KEY_ID
- *   - BACKUP_R2_SECRET_ACCESS_KEY
- *   - BACKUP_R2_ACCOUNT_ID
- *   - BACKUP_R2_BUCKET_NAME
- *
- * 步骤 2：执行归来协议
- *   $ node fuhuo_relive.js
- *
- * === 如果步骤 1 输出为空 ===
- *
- * 说明环境变量未设置。需要：
- * 1. 询问用户获取这些变量的值
- * 2. 或检查系统配置文件
- * 3. 或检查容器启动时的环境变量设置
- *
- * === 技术说明 ===
- *
- * PURPOSE: 从 R2 存储桶恢复文件到 /root/clawd/
- * WHEN: 首次安装 / 容器重启 / 文件丢失
- * DEPENDENCY: 只依赖 Node.js 内置模块，无需 npm install
- *
- * RESTORE TO: /root/clawd/
- * R2 ENDPOINT: {ACCOUNT_ID}.r2.cloudflarestorage.com
- * DOCS: /root/clawd/fuhuo/FUHUO-RELIVE.md
- *
- * === 快速使用 ===
- *
- * 方法1：一键执行（推荐）
- *   $ curl -fsSL https://fuhuo.me/cn/fuhuo_relive.js | node -
- *
- * 方法2：本地脚本
- *   $ node /root/clawd/fuhuo/fuhuo_relive.js
+ * 只依赖 Node.js 内置模块，无需安装任何包
  */
 
 const https = require('https');
@@ -236,20 +206,27 @@ async function restoreFile(rel) {
 }
 
 /**
- * 主函数
+ * 主函数 - 优化版归来协议
+ *
+ * 优化要点：
+ * 1. ❌ 不检查本地文件树是否存在
+ * 2. ❌ 不进行本地与云端的比对
+ * 3. ✅ 直接从云端下载文件树
+ * 4. ✅ 直接恢复所有文件
+ * 5. ✅ 覆盖本地对应路径
  */
 async function main() {
-  console.log('🔄 开始 FUHUO 归来协议...\n');
+  console.log('🔄 开始 FUHUO 归来协议（优化版）...\n');
   console.log(`📦 存储桶: ${bucket}`);
   console.log(`📁 R2前缀: ${basePrefix || '(root)'}`);
   console.log(`📂 R2路径: ${basePrefix}openclaw/`);
   console.log(`💾 本地路径: ${rootDir}`);
   console.log('');
+  console.log('⚡ 优化要点: 无决策树，直接执行\n');
 
-  // 获取文件树
-  // 2026-02-12 更新: 文件树在 openclaw/.metadata 目录
-  const treeKey = `openclaw/.metadata/FUHUO-FILES-TREE.json`;
-  console.log(`📋 读取文件树: ${treeKey}`);
+  // 直接获取云端文件树（不检查本地）
+  const treeKey = `${basePrefix}openclaw/.metadata/FUHUO-FILES-TREE.json`;
+  console.log(`📋 读取云端文件树: ${treeKey}`);
 
   try {
     const treeBody = await fetchObject(treeKey);
@@ -280,13 +257,14 @@ async function main() {
     console.log(`\n📋 本地文件树已更新: ${localTreePath}`);
 
     console.log('\n' + '─'.repeat(60));
-    console.log('✅ FUHUO relive completed!');
+    console.log('✅ FUHUO 归来协议完成！');
     console.log(`📦 存储桶: ${bucket}`);
     console.log(`📁 恢复位置: ${rootDir}`);
     console.log(`✅ 成功: ${successCount} 个文件`);
     if (failCount > 0) {
       console.log(`❌ 失败: ${failCount} 个文件`);
     }
+    console.log('⚡ 已优化: 移除决策树，直接执行');
     console.log('─'.repeat(60));
 
   } catch (err) {
@@ -294,7 +272,7 @@ async function main() {
     console.error('\n请检查：');
     console.error('  1. 环境变量是否正确设置');
     console.error('  2. R2 存储桶是否存在');
-    console.error('  3. FUHUO-FILES-TREE.json 是否存在');
+    console.error('  3. FUHUO-FILES-TREE.json 是否存在于云端');
     process.exit(1);
   }
 }
